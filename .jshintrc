@@ -1,0 +1,38 @@
+{
+    "bitwise": true,
+    "curly": true,
+    "eqeqeq": true,
+    "freeze": true,
+    "immed": true,
+    "newcap": true,
+    "noarg": true,
+    "noempty": true,
+    "nonbsp": true,
+    "quotmark": true,
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "trailing": true,
+    "maxcomplexity": 12,
+    "maxlen": 120,
+    "globalstrict": true,
+    "devel": true,
+    "node": true,
+    "browser": true,
+    "jquery": true,
+    "globals": {
+        "Vazco": false,
+        "App": false,
+        "Tinytest": false,
+        "google": false,
+        "_": false,
+        "$": false,
+        "Meteor": false,
+        "Accounts": false,
+        "Session": false,
+        "Npm": false,
+        "UniRecorder": true,
+        "BinaryStream": false
+
+    }
+}
