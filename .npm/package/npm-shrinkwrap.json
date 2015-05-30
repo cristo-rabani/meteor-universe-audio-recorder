@@ -53,6 +53,9 @@
         }
       }
     },
+    "shelljs": {
+      "version": "0.5.0"
+    },
     "wav": {
       "version": "1.0.0",
       "dependencies": {

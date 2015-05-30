@@ -58,7 +58,7 @@ UniRecorder.prototype.start = function(meta, cb){
     this._lastId = undefined;
     var uniRec = this;
     var token = _.random(1000000000, 9999999999999999).toString(36);
-    var defaultData = {ownerId: Meteor.userId(), _token: token, createdAt: new Date()};
+    var defaultData = {ownerId: Meteor.userId(), _writeToken: token, createdAt: new Date()};
     this._collection.insert(_.extend(meta, defaultData), function(err, id){
         if(err){
             return uniRec._done(err);
