@@ -1,6 +1,12 @@
 'use strict';
 
 /* global UniRecorder: true */
+/**
+ * Collection with recording and playing support
+ * @param options {{name, socketHost, socketPort, bufferSize, targetFileFormat, serverDirectoryPath}}
+ * @returns {UniRecorder}
+ * @constructor
+ */
 UniRecorder = function(options){
     options = options || {};
     if (!(this instanceof UniRecorder)) return new UniRecorder(options);

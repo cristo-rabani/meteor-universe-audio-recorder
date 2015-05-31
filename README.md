@@ -19,6 +19,9 @@ or `doc.play()` // Audio file is represented by document //
         targetFileFormat: 'ogg'
     });
 ```
+- Additional parameters:
+- - serverDirectoryPath
+- - socketPort (default 8998) for binary socket (one per new collection)
 
 Access management by allow/deny, but instead user you should check read token:
 
