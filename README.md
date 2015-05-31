@@ -1,7 +1,7 @@
 # Universe Audio Recorder
 This package provides API for recording and playing recorded sound.
-All works as a collection and documents with special methods like collection.startRecording()
-or doc.play() // Audio file is represented by document //
+All works as a collections and documents with special methods like `collection.startRecording()`
+or `doc.play()` // Audio file is represented by document //
 
 ## Recorder
 
@@ -114,7 +114,7 @@ but also Sox is available on Mac OS X and Windows
 ### Controlling players globally:
 - - mute: mutes all sounds for all players.
 - - unmute: Unmutes all sounds and restores them to their previous volume.
-- - getVolume: Get/set the global volume for all sounds. ( reactive source of data )
-- - setVolume: Number from 0.0 to 1.0.
+- - getVolume: Get the global volume for all sounds. ( reactive source of data )
+- - setVolume: Set number from 0.0 to 1.0.
 
 ### There is more stuff, but not yet documented.
