@@ -131,3 +131,5 @@ if(Meteor.isServer){
         );
     };
 }
+
+UniRecorder.UniAudioRecord = UniAudioRecord;

@@ -11,10 +11,19 @@ navigator.webkitGetUserMedia ||
 navigator.mozGetUserMedia ||
 navigator.msGetUserMedia;
 
+/**
+ * Checks if browser supports recording
+ * @returns {boolean}
+ */
 UniRecorder.prototype.isRecordingSupported = function(){
     return !!navigator.getUserMedia;
 };
 
+/**
+ * Tall if collection is ready to new recording
+ *  Reactive source of data
+ * @returns {*}
+ */
 UniRecorder.prototype.ready = function(){
     if(!this.isRecordingSupported()){
         return false;
@@ -43,7 +52,13 @@ UniRecorder.prototype._done = function(err, res){
     this._readyDeps && this._readyDeps.changed();
 };
 
-UniRecorder.prototype.start = function(meta, cb){
+/**
+ * Create new document represents record and start transmitting data from microphone.
+ *
+ * @param meta free to set.
+ * @param cb regular callback
+ */
+UniRecorder.prototype.startRecording = function(meta, cb){
     if (!this.isRecordingSupported) {
         throw new Error('getUserMedia not supported');
     }
@@ -99,7 +114,10 @@ UniRecorder.prototype.start = function(meta, cb){
 
 };
 
-UniRecorder.prototype.stop = function(){
+/**
+ * Stops recording.
+ */
+UniRecorder.prototype.stopRecording = function(){
     if(this._isInUse){
         this._done(null, this._lastId);
     }

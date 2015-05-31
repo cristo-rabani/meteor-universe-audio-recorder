@@ -15,6 +15,7 @@ if(typeof Router !== 'undefined'){
                 var instanceName = this.params.instanceName;
                 var recId = this.params._id;
                 var token = this.params.token;
+                var isDownloads = !!this.params.downloads;
                 if(!instanceName || !recId|| !UniRecorder._collections[instanceName]){
                     return e404.call(this);
                 }
@@ -23,15 +24,23 @@ if(typeof Router !== 'undefined'){
 
                 if(uniRec.canDownload(token, recDoc)){
                     var path = UniRecorder.getStorageFullPath(uniRec._targetStorage, instanceName, recId+'.'+recDoc.extName);
-                    var stat = fs.statSync(recDoc.path);
+                    var size = recDoc.size;
+                    if(!_.isNumber(size)){
+                        //try get size if is missing
+                        var stat = fs.statSync(path);
+                        size =  stat && stat.size || 0;
+                    }
                     //access granted
                     var name = recDoc.getName();
-                    this.response.writeHead(200, {
+                    var headers = {
                         'Content-Type': 'audio/'+recDoc.extName,
-                        'Content-Disposition': 'attachment; filename="'+name+'.'+recDoc.extName+'"',
-                        'Content-Length': stat.size
-                    }, name);
-                    var readStream = fs.createReadStream(recDoc.path);
+                        'Content-Length': size
+                    };
+                    if(isDownloads){
+                        headers['Content-Disposition'] = 'attachment; filename="'+name+'.'+recDoc.extName+'"';
+                    }
+                    this.response.writeHead(200, headers, name);
+                    var readStream = fs.createReadStream(path);
                     return readStream.pipe(this.response);
                 } else {
                     //no access

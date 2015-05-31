@@ -52,7 +52,7 @@ UniRecorder.prototype._createServer = function() {
             console.warn('UAR: Disconnected from client:', filePath);
             if (fileWriter != null) {
                 fileWriter.end();
-                setStatus(metaInfo._collectionName, metaInfo._id, UniRecorder.STATUS_UPLOADED, filePath);
+                setStatus(metaInfo._collectionName, metaInfo._id, UniRecorder.STATUS_UPLOADED, filePath, 'Disconnected');
                 saveToTarget(filePath, metaInfo._id, metaInfo._collectionName);
             }
         });
@@ -86,6 +86,9 @@ UniRecorder.prototype._createServer = function() {
                             }
                         }
                         mod.$set.extName = path.extname(pathToFile);
+                        if(mod.$set.extName[0] === '.'){
+                            mod.$set.extName = mod.$set.extName.slice(1);
+                        }
                     }
                     if(message){
                         mod.$set.logMessage = message;
