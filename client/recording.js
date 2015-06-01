@@ -20,7 +20,7 @@ UniRecorder.prototype.isRecordingSupported = function(){
 };
 
 /**
- * Tall if collection is ready to new recording
+ * Tell if collection is ready to new recording
  *  Reactive source of data
  * @returns {*}
  */
@@ -32,7 +32,7 @@ UniRecorder.prototype.ready = function(){
         this._readyDeps = new Tracker.Dependency;
     }
     this._readyDeps.depend();
-    return this._isInUse;
+    return !this._isInUse;
 };
 
 UniRecorder.prototype._done = function(err, res){
@@ -112,6 +112,12 @@ UniRecorder.prototype.startRecording = function(meta, cb){
         }, uniRec._done);
     });
 
+};
+
+UniRecorder.prototype.getCurrentRecording = function(){
+    if(this._lastId){
+        return this.findOne(this._lastId);
+    }
 };
 
 /**
