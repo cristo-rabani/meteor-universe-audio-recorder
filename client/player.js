@@ -74,7 +74,7 @@ AllPlayers.prototype = {
     /**
      * Get/set the global volume for all sounds.
      * @param  {Float} level Volume from 0.0 to 1.0.
-     * @return {AllPlayers/Float}     Returns self or current volume.
+     * @return {allPlayers}     Returns self or current volume.
      */
     setVolume: function(level){
         if(this._volumeDeps){
@@ -114,7 +114,7 @@ AllPlayers.prototype = {
 
     /**
      * Mute all sounds.
-     * @return {AllPlayers}
+     * @return {allPlayers}
      */
     mute: function () {
         this._setMuted(true);
@@ -124,7 +124,7 @@ AllPlayers.prototype = {
 
     /**
      * Unmute all sounds.
-     * @return {AllPlayers}
+     * @return {allPlayers}
      */
     unmute: function () {
         this._setMuted(false);
@@ -171,7 +171,7 @@ AllPlayers.prototype = {
      * iOS will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
-     * @return {AllPlayers}
+     * @return {allPlayers}
      */
     _enableiOSAudio: function () {
         var self = this;
@@ -238,7 +238,7 @@ if (!noAudio) {
 }
 
 // allow access to the global audio controls
-var AllPlayers = new AllPlayers(codecs);
+var allPlayers = new AllPlayers(codecs);
 
 // setup the audio player object
 var Player = function (audioDoc, params, cb) {
@@ -301,12 +301,12 @@ var Player = function (audioDoc, params, cb) {
     }
 
     // automatically try to enable audio on iOS
-    if (typeof ctx !== 'undefined' && ctx && AllPlayers.iOSAutoEnable) {
-        AllPlayers._enableiOSAudio();
+    if (typeof ctx !== 'undefined' && ctx && allPlayers.iOSAutoEnable) {
+        allPlayers._enableiOSAudio();
     }
 
     // add this to an array of Howl's to allow global control
-    AllPlayers._players.push(self);
+    allPlayers._players.push(self);
 
     // load the track
     self.load();
@@ -379,7 +379,7 @@ Player.prototype = {
             // listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
             newNode.addEventListener('error', function () {
                 if (newNode.error && newNode.error.code === 4) {
-                    AllPlayers.noAudio = true;
+                    allPlayers.noAudio = true;
                 }
 
                 self.on('loaderror', {type: newNode.error ? newNode.error.code : 0});
@@ -391,7 +391,7 @@ Player.prototype = {
             newNode.src = url;
             newNode._pos = 0;
             newNode.preload = 'auto';
-            newNode.volume = (AllPlayers._muted) ? 0 : self._volume * AllPlayers._volume();
+            newNode.volume = (allPlayers._muted) ? 0 : self._volume * allPlayers._volume();
 
             // setup the event listener to start playing the sound
             // as soon as it has buffered enough
@@ -442,28 +442,28 @@ Player.prototype = {
 
     /**
      * Play a sound from the current time (0 by default).
-     * @param  {String}   sprite   (optional) Plays from the specified position in the sound fragment definition.
+     * @param  {String}   fragmentName   (optional) Plays from the specified position in the sound fragment definition.
      * @param  {Function} callback (optional) Returns the unique playback id for this sound instance.
      * @return {Player}
      */
-    play: function (sprite, callback) {
+    play: function (fragmentName, callback) {
         var self = this;
         // use the default fragment if none is passed
-        if (!sprite) {
-            sprite = '_default';
+        if (!fragmentName) {
+            fragmentName = '_default';
         }
 
         // if the sound hasn't been loaded, add it to the event queue
         if (!self._loaded) {
             self.on('load', function () {
-                self.play(sprite, callback);
+                self.play(fragmentName, callback);
             });
 
             return self;
         }
 
         // if the fragment doesn't exist, play nothing
-        if (!self._fragments[sprite]) {
+        if (!self._fragments[fragmentName]) {
             if (typeof callback === 'function') callback();
             return self;
         }
@@ -471,24 +471,24 @@ Player.prototype = {
         // get the node to playback
         self._inactiveNode(function (node) {
             // persist the fragment being played
-            node._fragments = sprite;
+            node._fragments = fragmentName;
 
             // determine where to start playing from
-            var pos = (node._pos > 0) ? node._pos : self._fragments[sprite][0] / 1000;
+            var pos = (node._pos > 0) ? node._pos : self._fragments[fragmentName][0] / 1000;
 
             // determine how long to play for
             var duration = 0;
             if (self._webAudio) {
-                duration = self._fragments[sprite][1] / 1000 - node._pos;
+                duration = self._fragments[fragmentName][1] / 1000 - node._pos;
                 if (node._pos > 0) {
-                    pos = self._fragments[sprite][0] / 1000 + pos;
+                    pos = self._fragments[fragmentName][0] / 1000 + pos;
                 }
             } else {
-                duration = self._fragments[sprite][1] / 1000 - (pos - self._fragments[sprite][0] / 1000);
+                duration = self._fragments[fragmentName][1] / 1000 - (pos - self._fragments[fragmentName][0] / 1000);
             }
 
             // determine if this sound should be looped
-            var loop = !!(self._loop || self._fragments[sprite][2]);
+            var loop = !!(self._loop || self._fragments[fragmentName][2]);
 
             // set timer to fire the 'onend' event
             var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
@@ -496,13 +496,13 @@ Player.prototype = {
             (function () {
                 var data = {
                     id: soundId,
-                    fragment: sprite,
+                    fragment: fragmentName,
                     loop: loop
                 };
                 timerId = setTimeout(function () {
                     // if looping, restart the track
                     if (!self._webAudio && loop) {
-                        self.stop(data.id).play(sprite, data.id);
+                        self.stop(data.id).play(fragmentName, data.id);
                     }
 
                     // set web audio node to paused at end
@@ -528,8 +528,8 @@ Player.prototype = {
             })();
 
             if (self._webAudio) {
-                var loopStart = self._fragments[sprite][0] / 1000,
-                    loopEnd = self._fragments[sprite][1] / 1000;
+                var loopStart = self._fragments[fragmentName][0] / 1000,
+                    loopEnd = self._fragments[fragmentName][1] / 1000;
 
                 // set the play id to this node and load into context
                 node.id = soundId;
@@ -548,8 +548,8 @@ Player.prototype = {
                     node.readyState = 4;
                     node.id = soundId;
                     node.currentTime = pos;
-                    node.muted = AllPlayers._muted || node.muted;
-                    node.volume = self._volume * AllPlayers._volume();
+                    node.muted = allPlayers._muted || node.muted;
+                    node.volume = self._volume * allPlayers._volume();
                     setTimeout(function () {
                         node.play();
                     }, 0);
@@ -558,7 +558,7 @@ Player.prototype = {
 
                     (function () {
                         var sound = self,
-                            playSprite = sprite,
+                            playSprite = fragmentName,
                             fn = callback,
                             newNode = node;
                         var listener = function () {
@@ -764,7 +764,7 @@ Player.prototype = {
                 if (self._webAudio) {
                     activeNode.gain.value = vol;
                 } else {
-                    activeNode.volume = vol * AllPlayers._volume();
+                    activeNode.volume = vol * allPlayers._volume();
                 }
             }
 
@@ -793,17 +793,17 @@ Player.prototype = {
 
     /**
      * Get/set sound fragment definition.
-     * @param  {Object} sprite Example: {spriteName: [offset, duration, loop]}
+     * @param  {Object} name Example: {spriteName: [offset, duration, loop]}
      *                @param {Integer} offset   Where to begin playback in milliseconds
      *                @param {Integer} duration How long to play in milliseconds
      *                @param {Boolean} loop     (optional) Set true to loop this fragment
      * @return {Player}        Returns current fragment sheet or self.
      */
-    fragment: function (sprite) {
+    fragment: function (name) {
         var self = this;
 
-        if (typeof sprite === 'object') {
-            self._fragments = sprite;
+        if (typeof name === 'object') {
+            self._fragments = name;
 
             return self;
         } else {
@@ -853,51 +853,6 @@ Player.prototype = {
                 }
             }
         }
-    },
-
-    /**
-     * Get/set the 3D position of the audio source.
-     * The most common usage is to set the 'x' position
-     * to affect the left/right ear panning. Setting any value higher than
-     * 1.0 will begin to decrease the volume of the sound as it moves further away.
-     * NOTE: This only works with Web Audio API, HTML5 Audio playback
-     * will not be affected.
-     * @param  {Float}  x  The x-position of the playback from -1000.0 to 1000.0
-     * @param  {Float}  y  The y-position of the playback from -1000.0 to 1000.0
-     * @param  {Float}  z  The z-position of the playback from -1000.0 to 1000.0
-     * @param  {String} id (optional) The play instance ID.
-     * @return {Player/Array}   Returns self or the current 3D position: [x, y, z]
-     */
-    position3d: function (x, y, z, id) {
-        var self = this;
-
-        // set a default for the optional 'y' & 'z'
-        y = (typeof y === 'undefined' || !y) ? 0 : y;
-        z = (typeof z === 'undefined' || !z) ? -0.5 : z;
-
-        // if the sound hasn't been loaded, add it to the event queue
-        if (!self._loaded) {
-            self.on('play', function () {
-                self.position3d(x, y, z, id);
-            });
-
-            return self;
-        }
-
-        if (x >= 0 || x < 0) {
-            if (self._webAudio) {
-                var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-                if (activeNode) {
-                    self._pos3d = [x, y, z];
-                    activeNode.panner.setPosition(x, y, z);
-                    activeNode.panner.panningModel = self._model || 'HRTF';
-                }
-            }
-        } else {
-            return self._pos3d;
-        }
-
-        return self;
     },
 
     /**
@@ -1195,9 +1150,9 @@ Player.prototype = {
         }
 
         // remove the reference in the global _Howler object
-        var index = AllPlayers._players.indexOf(self);
+        var index = allPlayers._players.indexOf(self);
         if (index !== null && index >= 0) {
-            AllPlayers._players.splice(index, 1);
+            allPlayers._players.splice(index, 1);
         }
 
         // delete this sound from the cache
@@ -1290,7 +1245,7 @@ if (usingWebAudio) {
     /**
      * Finishes loading the Web Audio API sound and fires the loaded event
      * @param  {Object}  obj    The Howl object for the sound to load.
-     * @param  {Objecct} buffer The decoded buffer sound source.
+     * @param  {Object} buffer The decoded buffer sound source.
      */
     var loadSound = function (obj, buffer) {
         // set the duration
@@ -1334,5 +1289,5 @@ if (usingWebAudio) {
 
 }
 
-UniRecorder.AllPlayers = AllPlayers;
+UniRecorder.AllPlayers = allPlayers;
 UniRecorder.Player = Player;
