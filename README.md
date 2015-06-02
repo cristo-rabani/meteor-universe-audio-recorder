@@ -121,3 +121,11 @@ but also Sox is available on Mac OS X and Windows
 - - setVolume: Set number from 0.0 to 1.0.
 
 ### There is more stuff, but not yet documented.
+
+### FIXES FOR KNOWN PROBLEMS
+TIP: If you use meteor up for deployment and you have problem with hanging socket after new deployment on port. 
+You should change in /etc/init/[appName].conf SIGHUP on SIGKILL (probably SIGTERM will be worked too).
+
+```
+kill signal SIGHUP -> kill signal SIGKILL
+```
