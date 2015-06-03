@@ -27,7 +27,9 @@ _.extend(UniRecorder.UniAudioRecord.prototype, {
      * @memberOf UniRecorder.UniAudioRecord
      */
     destroyPlayer: function(){
-        this._player.unload();
+        if(this._player){
+            this._player.unload();
+        }
         this._player = null;
     },
     /**

@@ -38,9 +38,40 @@ UniRecorder.prototype._createServer = function() {
                     saveToTarget(filePath, meta._id, meta._collectionName);
 
                 });
+
                 stream.on('end', function(){
                     onEnd.run();
                 });
+
+                var onClose = Fiber(function () {
+                    console.warn('UAR: Disconnected from client:', filePath);
+                    if (fileWriter != null) {
+                        fileWriter.end();
+                        if(meta) {
+                            setStatus(meta._collectionName, meta._id, UniRecorder.STATUS_UPLOADED, filePath, 'Disconnected');
+                            saveToTarget(filePath, meta._id, meta._collectionName);
+                        }
+                    }
+                });
+
+                stream.on('close', function(){
+                    onClose.run();
+                });
+
+                var onError = Fiber(function (e) {
+                    console.warn('UAR: binary socket terror', e, filePath);
+                    if (fileWriter != null) {
+                        fileWriter.end();
+                        if(meta){
+                            setStatus(meta._collectionName, meta._id, UniRecorder.STATUS_ERROR, filePath);
+                        }
+                    }
+                });
+
+                stream.on('error', function(e){
+                    onError.run(e);
+                });
+
             } else{
                 console.error('UAR: Access deny for recorder id: ', meta._id);
             }
@@ -48,21 +79,10 @@ UniRecorder.prototype._createServer = function() {
         client.on('stream', function(stream, meta){
             onStream.run({stream: stream, meta: meta});
         });
-        var onClose = Fiber(function () {
-            console.warn('UAR: Disconnected from client:', filePath);
-            if (fileWriter != null) {
-                fileWriter.end();
-                setStatus(metaInfo._collectionName, metaInfo._id, UniRecorder.STATUS_UPLOADED, filePath, 'Disconnected');
-                saveToTarget(filePath, metaInfo._id, metaInfo._collectionName);
-            }
-        });
-        client.on('close', function(){
-            onClose.run();
-        });
 
         var onError = Fiber(function (e) {
+            console.warn('UAR: binary socket terror', e, filePath);
             if (fileWriter != null) {
-                console.warn('UAR: binary socket terror', e, filePath);
                 fileWriter.end();
                 setStatus(metaInfo._collectionName, metaInfo._id, UniRecorder.STATUS_ERROR, filePath);
             }
