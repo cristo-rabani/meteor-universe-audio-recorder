@@ -506,7 +506,7 @@ Player.prototype = {
             }
 
             // determine if this sound should be looped
-            var loop = !!(self._loop || self._fragments[fragmentName].timeLength);
+            var loop = !!(self._loop || self._fragments[fragmentName].loop);
 
             // set timer to fire the 'onend' event
             var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
