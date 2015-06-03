@@ -101,7 +101,7 @@ but also Sox is available on Mac OS X and Windows
 - doc.initPlayer(parameters, callback)
 - - initialize parameters
 - - - token for authentication (read token) if content is public then token is "public" ( and even optional )
-- - - buffer: Boolean (false by default, but for files > 25mb is true) Set to true to force HTML5 Audio. This should be used for large audio files.
+- - - buffer: Boolean Set to true to force HTML5 Audio. This should be used for large audio files.
 - - - autoplay: Boolean (false by default) Set to true to automatically start playback when sound is loaded.
 
 - doc.destroyPlayer()

@@ -34,7 +34,9 @@ if(typeof Router !== 'undefined'){
                     var name = recDoc.getName();
                     var headers = {
                         'Content-Type': 'audio/'+recDoc.extName,
-                        'Content-Length': size
+                        'Content-Transfer-Encoding': 'binary',
+                        'Content-Length': size,
+                        'Cache-Control': 'public'
                     };
                     if(isDownloads){
                         headers['Content-Disposition'] = 'attachment; filename="'+name+'.'+recDoc.extName+'"';

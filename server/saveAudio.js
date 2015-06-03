@@ -34,6 +34,7 @@ UniRecorder.prototype._createServer = function() {
                 stream.pipe(fileWriter);
                 var onEnd = Fiber(function () {
                     fileWriter.end();
+                    fileWriter = null;
                     setStatus(meta._collectionName, meta._id, UniRecorder.STATUS_UPLOADED, filePath);
                     saveToTarget(filePath, meta._id, meta._collectionName);
 
@@ -50,6 +51,7 @@ UniRecorder.prototype._createServer = function() {
                         if(meta) {
                             setStatus(meta._collectionName, meta._id, UniRecorder.STATUS_UPLOADED, filePath, 'Disconnected');
                             saveToTarget(filePath, meta._id, meta._collectionName);
+                            fileWriter = null;
                         }
                     }
                 });
@@ -64,6 +66,7 @@ UniRecorder.prototype._createServer = function() {
                         fileWriter.end();
                         if(meta){
                             setStatus(meta._collectionName, meta._id, UniRecorder.STATUS_ERROR, filePath);
+                            fileWriter = null;
                         }
                     }
                 });
@@ -117,7 +120,7 @@ UniRecorder.prototype._createServer = function() {
                         //removing unused write token and temporary path
                         mod.$unset = {_writeToken: '', path: ''};
                     }
-                    coll.update(id, mod, function (err) {
+                    coll.update({_id: id, status: {$ne: 0}}, mod, function (err) {
                         if (err) {
                             console.error(err.message || err);
                         }

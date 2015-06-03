@@ -1,6 +1,6 @@
 /*!
  *  It based on:
- *  howler.js v.1.26 James Simpson goldfirestudios.com
+ *  Playerer.js v.1.26 James Simpson goldfirestudios.com
  *  under MIT License
  */
 
@@ -247,8 +247,7 @@ var Player = function (audioDoc, params, cb) {
     // setup the defaults
     self._audioDoc = audioDoc;
     self._autoplay = params.autoplay || false;
-    //auto turn on buffor for files > 25mb
-    self._buffer = (typeof params.buffer !== 'undefined') ? params.buffer : (audioDoc.size > 26214400);
+    self._buffer = params.buffer;
     self._duration = params.duration || 0;
     self._format = audioDoc.extName || null;
     self._loop = params.loop || false;
@@ -277,14 +276,14 @@ var Player = function (audioDoc, params, cb) {
     self._onstop = [_isStopped];
 
     self._onpause = [function(){
-        if(audioDoc._playerStatusDeps && self._curStatus !== UniRecorder.PLAYER_PAUSED){
-            audioDoc._playerStatusDeps.changed();
+        if(self._playerStatusDeps && self._curStatus !== UniRecorder.PLAYER_PAUSED){
+            self._playerStatusDeps.changed();
         }
         self._curStatus = UniRecorder.PLAYER_PAUSED;
     }];
     self._onplay = [function(){
-        if(audioDoc._playerStatusDeps && self._curStatus !== UniRecorder.PLAYER_PLAYING){
-            audioDoc._playerStatusDeps.changed();
+        if(self._playerStatusDeps && self._curStatus !== UniRecorder.PLAYER_PLAYING){
+            self._playerStatusDeps.changed();
         }
         self._curStatus = UniRecorder.PLAYER_PLAYING;
     }];
@@ -305,7 +304,7 @@ var Player = function (audioDoc, params, cb) {
         allPlayers._enableiOSAudio();
     }
 
-    // add this to an array of Howl's to allow global control
+    // add this to an array of Player's to allow global control
     allPlayers._players.push(self);
 
     // load the track
@@ -313,8 +312,8 @@ var Player = function (audioDoc, params, cb) {
 };
 
 var _isStopped = function(){
-    if(this._audioDoc && this._audioDoc._playerStatusDeps && this._curStatus !== UniRecorder.PLAYER_STOPPED){
-        this._audioDoc._playerStatusDeps.changed();
+    if(this._playerStatusDeps && this._curStatus !== UniRecorder.PLAYER_STOPPED){
+        this._playerStatusDeps.changed();
     }
     this._curStatus = UniRecorder.PLAYER_STOPPED;
 };
@@ -399,7 +398,7 @@ Player.prototype = {
                 // round up the duration when using HTML5 Audio to account for the lower precision
                 self._duration = Math.ceil(newNode.duration * 10) / 10;
 
-                self._fragments._default = [0, self._duration * 1000];
+                self._fragments._default = {timeStart: 0, timeLength: self._duration * 1000};
 
                 if (!self._loaded) {
                     self._loaded = true;
@@ -420,6 +419,13 @@ Player.prototype = {
         return self;
     },
 
+    getPlayerStatus: function(){
+        if(!this._playerStatusDeps){
+            this._playerStatusDeps = new Tracker.Dependency;
+        }
+        this._playerStatusDeps.depend();
+        return this._curStatus;
+    },
     /**
      * Get/set the URLs to be pulled from to play in this source.
      * @param  {Array} urls  Arry of URLs to load from
@@ -462,33 +468,45 @@ Player.prototype = {
             return self;
         }
 
+        if(!self._fragments){
+            self._fragments = {};
+        }
+
+        if(!self._fragments._default){
+            self._fragments._default = {timeStart: 0, timeLength: self._duration * 1000};
+        }
+
         // if the fragment doesn't exist, play nothing
         if (!self._fragments[fragmentName]) {
+            console.warn('Cannot play because missing fragment:', fragmentName);
             if (typeof callback === 'function') callback();
             return self;
         }
-
+        // to the end of _default if fragment has end === 0;
+        if(self._fragments[fragmentName].timeLength === 0){
+            self._fragments[fragmentName].timeLength = (self._duration * 1000) - self._fragments[fragmentName].timeStart;
+        }
         // get the node to playback
         self._inactiveNode(function (node) {
             // persist the fragment being played
             node._fragments = fragmentName;
 
             // determine where to start playing from
-            var pos = (node._pos > 0) ? node._pos : self._fragments[fragmentName][0] / 1000;
+            var pos = (node._pos > 0) ? node._pos : self._fragments[fragmentName].timeStart / 1000;
 
             // determine how long to play for
             var duration = 0;
             if (self._webAudio) {
-                duration = self._fragments[fragmentName][1] / 1000 - node._pos;
+                duration = self._fragments[fragmentName].timeLength / 1000 - node._pos;
                 if (node._pos > 0) {
-                    pos = self._fragments[fragmentName][0] / 1000 + pos;
+                    pos = self._fragments[fragmentName].timeStart / 1000 + pos;
                 }
             } else {
-                duration = self._fragments[fragmentName][1] / 1000 - (pos - self._fragments[fragmentName][0] / 1000);
+                duration = self._fragments[fragmentName].timeLength / 1000 - (pos - self._fragments[fragmentName].timeStart / 1000);
             }
 
             // determine if this sound should be looped
-            var loop = !!(self._loop || self._fragments[fragmentName][2]);
+            var loop = !!(self._loop || self._fragments[fragmentName].timeLength);
 
             // set timer to fire the 'onend' event
             var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
@@ -528,8 +546,8 @@ Player.prototype = {
             })();
 
             if (self._webAudio) {
-                var loopStart = self._fragments[fragmentName][0] / 1000,
-                    loopEnd = self._fragments[fragmentName][1] / 1000;
+                var loopStart = self._fragments[fragmentName].timeStart / 1000,
+                    loopEnd = self._fragments[fragmentName].timeLength / 1000;
 
                 // set the play id to this node and load into context
                 node.id = soundId;
@@ -1120,7 +1138,7 @@ Player.prototype = {
     },
 
     /**
-     * Unload and destroy the current Howl object.
+     * Unload and destroy the current Player object.
      * This will immediately stop all play instances attached to this sound.
      */
     unload: function () {
@@ -1149,7 +1167,7 @@ Player.prototype = {
             clearTimeout(self._onendTimer[i].timer);
         }
 
-        // remove the reference in the global _Howler object
+        // remove the reference in the global _Playerer object
         var index = allPlayers._players.indexOf(self);
         if (index !== null && index >= 0) {
             allPlayers._players.splice(index, 1);
@@ -1170,7 +1188,7 @@ if (usingWebAudio) {
 
     /**
      * Buffer a sound from URL (or from cache) and decode to audio source (Web Audio API).
-     * @param  {Object} obj The Howl object for the sound to load.
+     * @param  {Object} obj The Player object for the sound to load.
      * @param  {String} url The path to the sound file.
      */
     var loadBuffer = function (obj, url) {
@@ -1223,7 +1241,7 @@ if (usingWebAudio) {
     /**
      * Decode audio data from an array buffer.
      * @param  {ArrayBuffer} arraybuffer The audio data.
-     * @param  {Object} obj The Howl object for the sound to load.
+     * @param  {Object} obj The Player object for the sound to load.
      * @param  {String} url The path to the sound file.
      */
     var decodeAudioData = function (arraybuffer, obj, url) {
@@ -1244,7 +1262,7 @@ if (usingWebAudio) {
 
     /**
      * Finishes loading the Web Audio API sound and fires the loaded event
-     * @param  {Object}  obj    The Howl object for the sound to load.
+     * @param  {Object}  obj    The Player object for the sound to load.
      * @param  {Object} buffer The decoded buffer sound source.
      */
     var loadSound = function (obj, buffer) {
@@ -1252,7 +1270,7 @@ if (usingWebAudio) {
         obj._duration = (buffer) ? buffer.duration : obj._duration;
 
         // setup a fragment of full
-        obj._fragments._default = [0, obj._duration * 1000];
+        obj._fragments._default = {timeStart: 0, timeLength: obj._duration * 1000};
 
         // fire the loaded event
         if (!obj._loaded) {
