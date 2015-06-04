@@ -1,6 +1,6 @@
 /*!
  *  It based on:
- *  Playerer.js v.1.26 James Simpson goldfirestudios.com
+ *  howler.js v.1.26 James Simpson goldfirestudios.com
  *  under MIT License
  */
 
@@ -1167,7 +1167,7 @@ Player.prototype = {
             clearTimeout(self._onendTimer[i].timer);
         }
 
-        // remove the reference in the global _Playerer object
+        // remove the reference in the global _Player object
         var index = allPlayers._players.indexOf(self);
         if (index !== null && index >= 0) {
             allPlayers._players.splice(index, 1);
