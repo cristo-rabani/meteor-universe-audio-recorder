@@ -20,6 +20,9 @@ _.extend(UniRecorder.UniAudioRecord.prototype, {
            this.destroyPlayer();
         }
         this._player = new UniRecorder.Player(this, options, cb);
+        if(this._playerStatusDeps){
+            this._playerStatusDeps.changed();
+        }
         return this._player;
     },
     /**
@@ -59,14 +62,15 @@ _.extend(UniRecorder.UniAudioRecord.prototype, {
      * @returns {String|undefined} return const UniRecorder.PLAYER_*
      */
     getPlayerStatus: function(){
-        if(!this._playerStatusDeps){
-            this._playerStatusDeps = new Tracker.Dependency;
-        }
-        this._playerStatusDeps.depend();
         if(!this._player){
+            if(!this._playerStatusDeps){
+                this._playerStatusDeps = new Tracker.Dependency;
+            }
+            this._playerStatusDeps.depend();
             return UniRecorder.PLAYER_UNLOADED;
         }
-        return this._player._curStatus;
+        this._playerStatusDeps = undefined;
+        return this._player.getPlayerStatus();
     },
     /**
      * Marks the part of audio in range (offset + duration)
@@ -79,13 +83,14 @@ _.extend(UniRecorder.UniAudioRecord.prototype, {
     setFragment: function(name, offset, duration, cb){
         var toSet = {};
         cb = _.isFunction(cb) ? cb : function(){};
-        toSet['fragments.'+name] = [offset, duration];
+        toSet['fragments.'+name] = {timeStart: offset, timeLength: duration};
         var self = this;
         this.update({$set: toSet}, function(err){
             if(err){
                 return cb(err, self);
             }
             if(self._player){
+                self.fragments = self.fragments || {};
                 self.fragments[name] = toSet['fragments.'+name];
                 self._player.fragment(self.fragments);
             }
