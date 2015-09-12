@@ -5,11 +5,39 @@ or `doc.play()` // Audio file is represented by document //
 
 ## Recorder
 
-- Features
-- - Live streaming voice from microphone to server via binary socket.
-- - Supported target formats wav, ogg, mp3
-- - Fully integrated with collection and the records are represented by documents
-- - Any number of collections of audio records
+Features
+- Live streaming voice from microphone to server via binary socket.
+- Supported target formats wav, ogg, mp3
+- Fully integrated with collection and the records are represented by documents
+- Any number of collections of audio records
+
+## Quick example
+
+```
+// Common space (client&server)
+var myPerfectRecorder = new UniRecorder({
+        name: 'soundsCollection',
+        targetFileFormat: 'ogg'
+});
+
+myPerfectRecorder.allow({
+        // download & play
+        download: function() { return true; },
+        update: function(){ return true; },
+        insert: function (){ return true; }
+});
+
+// On client
+myPerfectRecorder.startRecording();
+// In progress: recording from microphone and streaming to the server
+// ... after while
+myPerfectRecorder.stopRecording();
+
+//Ok, all done.
+//If we have publication and subsription.
+var audioDoc = myPerfectRecorder.findOne();
+audioDoc.play();
+```
 
 ###  Creation a recorder collection
 
