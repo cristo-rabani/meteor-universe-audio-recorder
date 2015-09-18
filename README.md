@@ -7,7 +7,7 @@ or `doc.play()` // Audio file is represented by document //
 
 Features
 - Live streaming voice from microphone to server via binary socket.
-- Supported target formats wav, ogg, mp3
+- Supported target formats wav, ogg
 - Fully integrated with collection and the records are represented by documents
 - Any number of collections of audio records
 
