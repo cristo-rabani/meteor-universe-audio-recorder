@@ -1,7 +1,7 @@
 Package.describe({
     summary: 'Audio recording and playing. Captures microphone and streaming to meteor server. wav ogg mp3',
     name: 'universe:audio-recorder',
-    version: '1.0.0'
+    version: '1.0.1'
 });
 
 Npm.depends({
