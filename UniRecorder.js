@@ -19,8 +19,10 @@ UniRecorder = function(options){
     if(UniRecorder._collections[name]){
         throw new Error('UniRecorder already exists under name:'+name);
     }
-    this._collection = new UniCollection(name);
-    this._collection.setConstructor(UniAudioRecord);
+    this._collection = new UniCollection(name,{
+        mixins: [new UniCollection.mixins.PublishAccessMixin()]
+    });
+    this._collection.setDocumentPrototype(UniAudioRecord);
     var self = this;
     this._collection.helpers({getUniRecorderInstance: function(){return self}});
 

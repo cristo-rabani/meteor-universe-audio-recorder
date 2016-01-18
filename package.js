@@ -12,7 +12,7 @@ Npm.depends({
 
 Package.onUse(function (api) {
     api.versionsFrom(['METEOR@1.1.0.2']);
-    api.use(['underscore', 'vazco:universe-collection@1.2.2', 'vazco:universe-utilities@1.5.1']);
+    api.use(['underscore', 'universe:utilities', 'universe:utilities-blaze', 'universe:collection']);
     api.use(['tracker'], 'client');
     //In future, we add default route for flow router
     api.use('iron:router@1.0.7 || 0.9.4', ['client', 'server']);
