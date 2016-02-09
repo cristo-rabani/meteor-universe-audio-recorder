@@ -47,7 +47,15 @@ UniRecorder.prototype._done = function(err, res){
     if(this._recorder){
         this._recorder.onaudioprocess = null;
     }
-    if(this._audioStream){ this._audioStream.stop(); }
+    if(this._audioStream) {
+        var stopped = false;
+        if (this._audioStream.getAudioTracks) {
+            this._audioStream.getAudioTracks().forEach(function(t){t.stop(); stopped = true;});
+        }
+        if (!stopped && this._audioStream.stop) {
+            this._audioStream.stop();
+        }
+    }
     if(this._audioInput) { this._audioInput.disconnect() }
     this._readyDeps && this._readyDeps.changed();
 };
