@@ -126,7 +126,7 @@ UniAudioRecord.prototype.getURL = function (token) {
         token = token || 'public';
 
         return Meteor.absoluteUrl('audiorecords/get/'+this.getCollectionName()+'/'+this._id+'/'+token, {
-            secure: !!this._socketSSLPort
+            secure: /^https:\/\//i.test(window.location.href)
         });
     }
 };
