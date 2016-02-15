@@ -12,6 +12,7 @@ UniRecorder = function(options){
     if (!(this instanceof UniRecorder)) return new UniRecorder(options);
     this._socketHost = options.socketHost || (Meteor.isClient ? location.hostname: 'localhost');
     this._socketPort = parseInt(options.socketPort || 8998);
+    this._socketSSLPort = parseInt(options.socketSSLPort || 0);
     this._bufferSize = parseInt(options.bufferSize || 4096);
     this._targetFileFormat = (_.contains(['ogg','mp3'], options.targetFileFormat)? options.targetFileFormat : 'wav');
     this._targetStorage = options.serverDirectoryPath;

@@ -87,7 +87,8 @@ UniRecorder.prototype.startRecording = function(meta, cb){
             return uniRec._done(err);
         }
         navigator.getUserMedia(session, function (streamAudio) {
-            var client = new BinaryClient('ws://'+uniRec._socketHost+':'+uniRec._socketPort);
+            var client = new BinaryClient((uniRec._socketSSLPort ? 'wss' : 'ws') + '://' +
+                    uniRec._socketHost + ':' + (uniRec._socketSSLPort || uniRec._socketPort));
             var audioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
             var context = new audioContext();
             var audioInput = context.createMediaStreamSource(streamAudio);
@@ -146,4 +147,3 @@ function convertFloat32ToInt16(buffer) {
     }
     return _buf.buffer;
 }
-
